@@ -1,0 +1,65 @@
+#include <iostream>
+#include <vector>
+#include <cmath>
+
+class IRRCalculator {
+public:
+    IRRCalculator(const std::vector<double>& cashFlows) : cashFlows(cashFlows) {}
+
+    double calculateIRR(double initialGuess = 0.1, double tolerance = 1e-6, int maxIterations = 1000) {
+        double irr = initialGuess;
+        int iteration = 0;
+
+        while (iteration < maxIterations) {
+            double npv = calculateNPV(irr);
+            double derivative = calculateDerivative(irr);
+
+            if (fabs(derivative) < tolerance) {
+                throw std::runtime_error("Derivative too small, no convergence.");
+            }
+
+            double newIRR = irr - npv / derivative;
+            if (fabs(newIRR - irr) < tolerance) {
+                return newIRR;
+            }
+
+            irr = newIRR;
+            iteration++;
+        }
+
+        throw std::runtime_error("Maximum iterations reached, no convergence.");
+    }
+
+private:
+    std::vector<double> cashFlows;
+
+    double calculateNPV(double rate) {
+        double npv = 0.0;
+        for (size_t i = 0; i < cashFlows.size(); ++i) {
+            npv += cashFlows[i] / std::pow(1.0 + rate, i);
+        }
+        return npv;
+    }
+
+    double calculateDerivative(double rate) {
+        double derivative = 0.0;
+        for (size_t i = 1; i < cashFlows.size(); ++i) {
+            derivative -= i * cashFlows[i] / std::pow(1.0 + rate, i + 1);
+        }
+        return derivative;
+    }
+};
+
+int main() {
+    std::vector<double> cashFlows = {-1000, 300, 400, 500, 600};
+    IRRCalculator irrCalculator(cashFlows);
+
+    try {
+        double irr = irrCalculator.calculateIRR();
+        std::cout << "The IRR is: " << irr * 100 << "%" << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << std::endl;
+    }
+
+    return 0;
+}
