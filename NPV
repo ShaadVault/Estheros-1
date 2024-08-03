@@ -1,0 +1,33 @@
+#include <iostream>
+#include <vector>
+#include <cmath>
+
+class NPVCalculator {
+public:
+    NPVCalculator(const std::vector<double>& cashFlows, double discountRate)
+        : cashFlows(cashFlows), discountRate(discountRate) {}
+
+    double calculateNPV() {
+        double npv = 0.0;
+        for (size_t i = 0; i < cashFlows.size(); ++i) {
+            npv += cashFlows[i] / std::pow(1.0 + discountRate, i);
+        }
+        return npv;
+    }
+
+private:
+    std::vector<double> cashFlows;
+    double discountRate;
+};
+
+int main() {
+    std::vector<double> cashFlows = {-1000, 300, 400, 500, 600};
+    double discountRate = 0.1;
+
+    NPVCalculator npvCalculator(cashFlows, discountRate);
+    double npv = npvCalculator.calculateNPV();
+
+    std::cout << "The NPV is: " << npv << std::endl;
+
+    return 0;
+}
